@@ -1,36 +1,36 @@
 <?= $this->extend('layout') ?>
-
-<?php 
-// Pastikan variabel $product ada dan tidak kosher
-if (!isset($product)) {
-    $product = [];
+<?= $this->section('content') ?>
+<?php
+if (session()->getFlashData('success')) {
+?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= session()->getFlashData('success') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php
 }
 ?>
-
-<?= $this->section('title') ?>
-<?= $this->endSection() ?>
-
-<?= $this->section('content') ?>
-<p>Welcome to the home page!</p>
-
 <!-- Table with stripped rows -->
 <div class="row">
     <?php foreach ($product as $key => $item) : ?>
         <div class="col-lg-6">
+            <?= form_open('keranjang') ?>
+            <?php
+            echo form_hidden('id', $item['id']);
+            echo form_hidden('nama', $item['nama']);
+            echo form_hidden('harga', $item['harga']);
+            echo form_hidden('foto', $item['foto']);
+            ?>
             <div class="card">
                 <div class="card-body">
-                    <img src="<?php echo base_url() . "img/" . $item['foto'] ?>" alt="..." width="100%">
-                    <h5 class="card-title"><?php echo $item['nama'] ?><br><?php echo $item['harga'] ?></h5>
+                    <img src="<?php echo base_url() . "img/" . $item['foto'] ?>" alt="..." width="300px">
+                    <h5 class="card-title"><?php echo $item['nama'] ?><br><?php echo number_to_currency($item['harga'], 'IDR') ?></h5>
+                    <button type="submit" class="btn btn-info rounded-pill">Beli</button>
                 </div>
             </div>
+            <?= form_close() ?>
         </div>
     <?php endforeach ?>
 </div>
 <!-- End Table with stripped rows -->
-
-<div class="navigation-links">
-    <a href="<?= base_url('profile') ?>">Profile</a>
-    <a href="<?= base_url('faq') ?>">FAQ</a>
-    <a href="<?= base_url('contact') ?>">Contact</a>
-</div>
 <?= $this->endSection() ?>

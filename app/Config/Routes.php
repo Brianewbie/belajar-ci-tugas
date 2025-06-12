@@ -6,23 +6,32 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-// Halaman utama
+
 $routes->get('/', 'Home::index', ['filter' => 'auth']);
 
-// Auth routes
+
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
 
-// Produk
+
 $routes->group('produk', ['filter' => 'auth'], function ($routes) { 
     $routes->get('', 'ProdukController::index');
     $routes->post('', 'ProdukController::create');
     $routes->post('edit/(:any)', 'ProdukController::edit/$1');
     $routes->get('delete/(:any)', 'ProdukController::delete/$1');
+    $routes->get('download','ProdukController::download');
 });
 
-// Kategori
+$routes->group('keranjang', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'TransaksiController::index');
+    $routes->post('', 'TransaksiController::cart_add');
+    $routes->post('edit', 'TransaksiController::cart_edit');
+    $routes->get('delete/(:any)', 'TransaksiController::cart_delete/$1');
+    $routes->get('clear', 'TransaksiController::cart_clear');
+});
+
+
 $routes->group('kategori', ['filter' => 'auth'], function ($routes) { 
     $routes->get('', 'KategoriController::index');
     $routes->post('', 'KategoriController::create'); 
@@ -30,10 +39,10 @@ $routes->group('kategori', ['filter' => 'auth'], function ($routes) {
     $routes->get('delete/(:num)', 'KategoriController::delete/$1');
 });
 
-// Keranjang
+
 $routes->get('keranjang', 'TransaksiController::index', ['filter' => 'auth', 'as' => 'keranjang']);
 
-// Halaman lain
+
 $routes->get('faq', 'Home::faq', ['filter' => 'auth', 'as' => 'faq']);
 $routes->get('profile', 'Home::profile', ['filter' => 'auth', 'as' => 'profile']);
 $routes->get('contact', 'Home::contact', ['filter' => 'auth', 'as' => 'contact']);
