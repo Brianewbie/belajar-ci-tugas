@@ -6,31 +6,32 @@ use CodeIgniter\Database\Migration;
 
 class ProductCategory extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => TRUE,
-                'auto_increment' => TRUE
-            ],
-            'nama' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => FALSE,
-            ],
-           
-        ]);
+        if (! $this->db->tableExists('kategori')) {
+            $this->forge->addField([
+                'id' => [
+                    'type'           => 'INT',
+                    'constraint'     => 11,
+                    'unsigned'       => TRUE,
+                    'auto_increment' => TRUE
+                ],
+                'nama' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => FALSE,
+                ],
+            ]);
 
-        $this->forge->addKey('id', TRUE);
-        $this->forge->createTable('kategori');
+            $this->forge->addKey('id', TRUE);
+            $this->forge->createTable('kategori');
+        }
     }
 
-    //--------------------------------------------------------------------
-
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('kategori');
+        if ($this->db->tableExists('kategori')) {
+            $this->forge->dropTable('kategori');
+        }
     }
 }

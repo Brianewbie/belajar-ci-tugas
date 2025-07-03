@@ -6,53 +6,57 @@ use CodeIgniter\Database\Migration;
 
 class Transaction extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => TRUE,
-                'auto_increment' => TRUE
-            ],
-            'username' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => FALSE,
-            ],
-            'total_harga' => [
-                'type' => 'DOUBLE',
-                'null' => FALSE,
-            ],
-            'alamat' => [
-                'type' => 'TEXT',
-                'null' => FALSE,
-            ],
-            'ongkir' => [
-                'type' => 'DOUBLE',
-                'null' => TRUE
-            ],
-            'status' => [
-                'type' => 'INT',
-                'constraint' => 1,
-                'null' => FALSE,
-            ],
-            'created_at' => [
-                'type' => 'datetime',
-                'null' => TRUE
-            ],
-            'updated_at' => [
-                'type' => 'datetime',
-                'null' => TRUE
-            ]
-        ]);
+        if (! $this->db->tableExists('transaction')) {
+            $this->forge->addField([
+                'id' => [
+                    'type'           => 'INT',
+                    'constraint'     => 11,
+                    'unsigned'       => TRUE,
+                    'auto_increment' => TRUE
+                ],
+                'username' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => FALSE,
+                ],
+                'total_harga' => [
+                    'type' => 'DOUBLE',
+                    'null' => FALSE,
+                ],
+                'alamat' => [
+                    'type' => 'TEXT',
+                    'null' => FALSE,
+                ],
+                'ongkir' => [
+                    'type' => 'DOUBLE',
+                    'null' => TRUE
+                ],
+                'status' => [
+                    'type'       => 'INT',
+                    'constraint' => 1,
+                    'null'       => FALSE,
+                ],
+                'created_at' => [
+                    'type' => 'datetime',
+                    'null' => TRUE
+                ],
+                'updated_at' => [
+                    'type' => 'datetime',
+                    'null' => TRUE
+                ]
+            ]);
 
-        $this->forge->addKey('id', TRUE);
-        $this->forge->createTable('transaction');
+            $this->forge->addKey('id', TRUE);
+            $this->forge->createTable('transaction');
+        }
     }
 
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('transaction');
+        if ($this->db->tableExists('transaction')) {
+            $this->forge->dropTable('transaction');
+        }
     }
 }

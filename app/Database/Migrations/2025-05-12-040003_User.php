@@ -6,54 +6,58 @@ use CodeIgniter\Database\Migration;
 
 class User extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id' => [
-                'type' => 'INT',
-                'unsigned' => TRUE,
-                'auto_increment' => TRUE
-            ],
-            'username' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => FALSE,
-                'unique' => TRUE,
-            ],
-            'email' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => FALSE,
-                'unique' => TRUE,
-            ],
-            'password' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => FALSE,
-            ],
-            'role' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50,
-                'null' => FALSE,
-            ],
-            'created_at' => [
-                'type' => 'datetime',
-                'null' => TRUE
-            ],
-            'updated_at' => [
-                'type' => 'datetime',
-                'null' => TRUE
-            ]
-        ]);
+        // Cek dulu apakah tabel 'user' sudah ada
+        if (! $this->db->tableExists('user')) {
+            $this->forge->addField([
+                'id' => [
+                    'type'           => 'INT',
+                    'unsigned'       => true,
+                    'auto_increment' => true
+                ],
+                'username' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => false,
+                    'unique'     => true,
+                ],
+                'email' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => false,
+                    'unique'     => true,
+                ],
+                'password' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => false,
+                ],
+                'role' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 50,
+                    'null'       => false,
+                ],
+                'created_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                ],
+                'updated_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                ],
+            ]);
 
-        $this->forge->addKey('id', TRUE);
-        $this->forge->createTable('user');
+            $this->forge->addKey('id', true); // Primary key
+            $this->forge->createTable('user' );
+        }
     }
 
-    //--------------------------------------------------------------------
-
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('user');
+        // Drop tabel hanya jika ada
+        if ($this->db->tableExists('user')) {
+            $this->forge->dropTable('user');
+        }
     }
 }

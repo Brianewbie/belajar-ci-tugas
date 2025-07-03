@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ProductModel;
-USE Dompdf\Dompdf;
+use Dompf\Dompdf;
 
 class ProdukController extends BaseController
 {
@@ -16,11 +16,38 @@ class ProdukController extends BaseController
 
     public function index()
     {
+         helper(['form', 'number']);
+
         $product = $this->product->findAll();
         $data['product'] = $product;
 
         return view('v_produk', $data);
     }
+
+
+public function beli($id)
+{
+    $cart = \Config\Services::cart();
+    $produkModel = new ProdukModel();
+    $produk = $produkModel->find($id);
+
+    if (!$produk) {
+        return redirect()->to('/')->with('error', 'Produk tidak ditemukan');
+    }
+
+    $diskon = session()->get('diskon') ?? 0;
+    $hargaSetelahDiskon = max(0, $produk['harga'] - $diskon); // pastikan tidak negatif
+
+    $cart->insert([
+        'id'      => $produk['id'],
+        'qty'     => 1,
+        'price'   => $hargaSetelahDiskon,
+        'name'    => $produk['nama']
+    ]);
+
+    return redirect()->to('/keranjang')->with('success', 'Produk ditambahkan ke keranjang');
+}
+
     public function create()
     {
     $dataFoto = $this->request->getFile('foto');
@@ -84,31 +111,30 @@ public function delete($id)
 
     return redirect('produk')->with('success', 'Data Berhasil Dihapus');
     }
-    
-    public function download()
-{
-		//get data from database
-    $product = $this->product->findAll();
+        public function download()
+    {
+            //get data from database
+        $product = $this->product->findAll();
 
-		//pass data to file view
-    $html = view('v_produkPDF', ['product' => $product]);
+            //pass data to file view
+        $html = view('v_produkPDF', ['product' => $product]);
 
-		//set the pdf filename
-    $filename = date('y-m-d-H-i-s') . '-produk';
+            //set the pdf filename
+        $filename = date('y-m-d-H-i-s') . '-produk';
 
-    // instantiate and use the dompdf class
-    $dompdf = new Dompdf();
+        // instantiate and use the dompdf class
+        $dompdf = new Dompdf();
 
-    // load HTML content (file view)
-    $dompdf->loadHtml($html);
+        // load HTML content (file view)
+        $dompdf->loadHtml($html);
 
-    // (optional) setup the paper size and orientation
-    $dompdf->setPaper('A4', 'potrait');
+        // (optional) setup the paper size and orientation
+        $dompdf->setPaper('A4', 'potrait');
 
-    // render html as PDF
-    $dompdf->render();
+        // render html as PDF
+        $dompdf->render();
 
-    // output the generated pdf
-    $dompdf->stream($filename);
-}
+        // output the generated pdf
+        $dompdf->stream($filename);
+    }
 }

@@ -55,7 +55,19 @@ class AuthController extends BaseController
     }
 
     return view('v_login');
+        $today = date('Y-m-d');
+    $diskon = $diskonModel->where('tanggal', $today)->first();
+    if ($diskon) {
+        session()->set('diskon_nominal', $diskon['nominal']);
 }
+    $diskonModel = new DiskonModel();
+    $diskon = $diskonModel->getHariIni();
+
+    if ($diskon) {
+        session()->set('diskon_nominal', $diskon['nominal']);
+    }
+}
+
 public function logout()
 {
     session()->destroy();

@@ -44,7 +44,7 @@ class Product extends Migration
         ]);
 
         $this->forge->addKey('id', TRUE);
-        $this->forge->createTable('product');
+        $this->forge->createTable('product',true);
     }
 
     //--------------------------------------------------------------------

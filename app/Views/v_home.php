@@ -1,5 +1,7 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
+<?php helper(['form', 'number']); ?>
+
 <?php
 if (session()->getFlashData('success')) {
 ?>
@@ -10,15 +12,20 @@ if (session()->getFlashData('success')) {
 <?php
 }
 ?>
+
 <!-- Table with stripped rows -->
 <div class="row">
-    <?php foreach ($product as $key => $item) : ?>
+    <?php foreach ($produk as $key => $item) : ?>
         <div class="col-lg-6">
-            <?= form_open('keranjang') ?>
+            <?= form_open('keranjang/add') ?>
+
             <?php
+            $diskon = session()->get('diskon') ?? 0;
+            $hargaDiskon = max(0, $item['harga'] - $diskon);
+
             echo form_hidden('id', $item['id']);
             echo form_hidden('nama', $item['nama']);
-            echo form_hidden('harga', $item['harga']);
+            echo form_hidden('harga', $item['harga']); 
             echo form_hidden('foto', $item['foto']);
             ?>
             <div class="card">
@@ -32,5 +39,6 @@ if (session()->getFlashData('success')) {
         </div>
     <?php endforeach ?>
 </div>
+
 <!-- End Table with stripped rows -->
 <?= $this->endSection() ?>

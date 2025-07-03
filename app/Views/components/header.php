@@ -9,11 +9,24 @@
   <i class="bi bi-list toggle-sidebar-btn"></i>
 </div><!-- End Logo -->
 
-<div class="search-bar">
-  <form class="search-form d-flex align-items-center" method="POST" action="#">
-    <input type="text" name="query" placeholder="Search" title="Enter search keyword">
-    <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-  </form>
+<form class="search-form d-flex align-items-center" method="POST" action="#" style="max-width: 400px;">
+  <input type="text" name="query" placeholder="Search" title="Enter search keyword" style="font-size: 18px; height: 36px; padding: 7  px;">
+  <button type="submit" title="Search" style="font-size: 12px;"><i class="bi bi-search"></i></button>
+</form>
+
+<!-- Info Diskon -->
+<div class="ms-3 alert alert-success mb-0 py-2 px-3 d-none d-md-block" style="font-size: 0.9rem; border-radius: 4px;">
+
+ Hari ini ada diskon <strong>Rp200.000</strong> per item
+</div>
+
+
+  <?php if (!empty($diskonHariIni)): ?>
+    <div class="alert alert-success py-2 px-3 mb-0" style="white-space: nowrap;">
+      Hari ini ada diskon <?= number_format($diskonHariIni['nominal']) ?> per item
+    </div>
+  <?php endif; ?>
+
 </div><!-- End Search Bar -->
 
 <nav class="header-nav ms-auto">
@@ -106,6 +119,7 @@
         <i class="bi bi-chat-left-text"></i>
         <span class="badge bg-success badge-number">3</span>
       </a><!-- End Messages Icon -->
+
 
       <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
         <li class="dropdown-header">

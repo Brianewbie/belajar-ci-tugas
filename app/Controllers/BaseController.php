@@ -51,8 +51,14 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        // Preload any models, libraries, etc, here.
+        // Load session service
+        $this->session = \Config\Services::session();
 
-        // E.g.: $this->session = service('session');
+        // Set diskon 10% jika belum diset di session
+        if (!$this->session->has('diskon')) {
+            $this->session->set('diskon', 10); // Diskon 10%
+        }
+
+        // You may preload models/libraries here if needed
     }
 }

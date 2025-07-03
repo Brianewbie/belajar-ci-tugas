@@ -2,9 +2,10 @@
 
 namespace App\Controllers;
 
+use App\Models\ProductModel;
 use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
-
+use App\Models\DiskonModel;
 
 class TransaksiController extends BaseController
 {
@@ -13,6 +14,7 @@ class TransaksiController extends BaseController
     protected $apiKey;
     protected $transaction;
     protected $transaction_detail;
+    protected $diskonModel;
 
     function __construct()
     {
@@ -21,9 +23,9 @@ class TransaksiController extends BaseController
         $this->cart = \Config\Services::cart();
         $this->client = new \GuzzleHttp\Client();
         $this->apiKey = env('COST_KEY');
-        $this->transaction = new TransactionModel(); // baris 24
+        $this->transaction = new TransactionModel();
         $this->transaction_detail = new TransactionDetailModel();
-
+        $this->diskonModel = new DiskonModel();
     }
 
     public function index()
@@ -73,107 +75,105 @@ class TransaksiController extends BaseController
         session()->setflashdata('success', 'Keranjang Berhasil Dihapus');
         return redirect()->to(base_url('keranjang'));
     }
+
     public function checkout()
-{
-    $data['items'] = $this->cart->contents();
-    $data['total'] = $this->cart->total();
+    {
+        $data['items'] = $this->cart->contents();
+        $data['total'] = $this->cart->total();
 
-    return view('v_checkout', $data);
-}
+        return view('v_checkout', $data);
+    }
 
+    public function getLocation()
+    {
+        $search = $this->request->getGet('search');
 
-public function getLocation()
-{
-		
-    $search = $this->request->getGet('search');
-
-    $response = $this->client->request(
-        'GET', 
-        'https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search='.$search.'&limit=50', [
-            'headers' => [
-                'accept' => 'application/json',
-                'key' => $this->apiKey,
-            ],
-        ]
-    );
-
-    $body = json_decode($response->getBody(), true); 
-    return $this->response->setJSON($body['data']);
-}
-
-public function getCost()
-{ 
-		
-    $destination = $this->request->getGet('destination');
-
-		
-    $response = $this->client->request(
-        'POST', 
-        'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
-            'multipart' => [
-                [
-                    'name' => 'origin',
-                    'contents' => '64999'
+        $response = $this->client->request(
+            'GET',
+            'https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=' . $search . '&limit=50', [
+                'headers' => [
+                    'accept' => 'application/json',
+                    'key' => $this->apiKey,
                 ],
-                [
-                    'name' => 'destination',
-                    'contents' => $destination
+            ]
+        );
+
+        $body = json_decode($response->getBody(), true);
+        return $this->response->setJSON($body['data']);
+    }
+
+    public function getCost()
+    {
+        $destination = $this->request->getGet('destination');
+
+        $response = $this->client->request(
+            'POST',
+            'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
+                'multipart' => [
+                    [
+                        'name' => 'origin',
+                        'contents' => '64999'
+                    ],
+                    [
+                        'name' => 'destination',
+                        'contents' => $destination
+                    ],
+                    [
+                        'name' => 'weight',
+                        'contents' => '1000'
+                    ],
+                    [
+                        'name' => 'courier',
+                        'contents' => 'jne'
+                    ]
                 ],
-                [
-                    'name' => 'weight',
-                    'contents' => '1000'
+                'headers' => [
+                    'accept' => 'application/json',
+                    'key' => $this->apiKey,
                 ],
-                [
-                    'name' => 'courier',
-                    'contents' => 'jne'
-                ]
-            ],
-            'headers' => [
-                'accept' => 'application/json',
-                'key' => $this->apiKey,
-            ],
-        ]
-    );
+            ]
+        );
 
-    $body = json_decode($response->getBody(), true); 
-    return $this->response->setJSON($body['data']);
-}
+        $body = json_decode($response->getBody(), true);
+        return $this->response->setJSON($body['data']);
+    }
 
-public function buy()
-{
-    if ($this->request->getPost()) { 
-        $dataForm = [
-            'username' => $this->request->getPost('username'),
-            'total_harga' => $this->request->getPost('total_harga'),
-            'alamat' => $this->request->getPost('alamat'),
-            'ongkir' => $this->request->getPost('ongkir'),
-            'status' => 0,
-            'created_at' => date("Y-m-d H:i:s"),
-            'updated_at' => date("Y-m-d H:i:s")
-        ];
-
-        $this->transaction->insert($dataForm);
-
-        $last_insert_id = $this->transaction->getInsertID();
-
-        foreach ($this->cart->contents() as $value) {
-            $dataFormDetail = [
-                'transaction_id' => $last_insert_id,
-                'product_id' => $value['id'],
-                'jumlah' => $value['qty'],
-                'diskon' => 0,
-                'subtotal_harga' => $value['qty'] * $value['price'],
+    public function buy()
+    {
+        if ($this->request->getPost()) {
+            $dataForm = [
+                'username' => $this->request->getPost('username'),
+                'total_harga' => $this->request->getPost('total_harga'),
+                'alamat' => $this->request->getPost('alamat'),
+                'ongkir' => $this->request->getPost('ongkir'),
+                'status' => 0,
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => date("Y-m-d H:i:s")
             ];
 
-            $this->transaction_detail->insert($dataFormDetail);
+            $this->transaction->insert($dataForm);
+            $last_insert_id = $this->transaction->getInsertID();
+
+            foreach ($this->cart->contents() as $value) {
+                $diskon = session()->get('diskon_nominal') ?? 0;
+                $harga_setelah_diskon = max($value['price'] - $diskon, 0);
+                $subtotal = $value['qty'] * $harga_setelah_diskon;
+
+                $dataFormDetail = [
+                    'transaction_id' => $last_insert_id,
+                    'product_id' => $value['id'],
+                    'jumlah' => $value['qty'],
+                    'diskon' => $diskon,
+                    'subtotal_harga' => $subtotal,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => date("Y-m-d H:i:s")
+                ];
+
+                $this->transaction_detail->insert($dataFormDetail);
+            }
+
+            $this->cart->destroy();
+            return redirect()->to(base_url());
         }
-
-        $this->cart->destroy();
- 
-        return redirect()->to(base_url());
     }
-}
-
 }
