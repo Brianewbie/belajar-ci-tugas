@@ -1,4 +1,4 @@
-<?= $this->extend('layout') ?>
+<?= $this->extend('layout_clear') ?>
 <?= $this->section('content') ?>
 <?php
 $username = [
@@ -79,7 +79,7 @@ $password = [
               </div>
 
             </div>
-          </div>
+
         </div>
 
       </section>
